@@ -1,68 +1,99 @@
-const express = require('express')
-const cors = require('cors')
-const app = express()
-const port = 3000
-app.use(cors())
-app.use(express.json())
-const museums = [
-    {
-        id: 1,
-        name: 'National Museum',
-        city: 'Belgrade',
-    },
-    {
-        id: 2,
-        name: 'Museum of Contemporary Art',
-        city: 'Belgrade',
-    },
-]
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const app = express();
+const port = process.env.PORT || 3000;
+app.use(cors());
+app.use(express.json());
+mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log('Connected to MongoDB')
+    })
+    .catch((err) => {
+        console.log('MongoDB connection error:', err.message)
+    })
 
-app.get('/api/v1/museums', (req, res) => {
-    res.json(museums)
+const museumSchema= new mongoose.Schema(
+    {
+        name:{
+            type:String,
+            required:true,
+            trim:true
+        },
+        city:{
+            type:String,
+            required:true,
+            trim:true
+        }
+    }
+)
+const Museum = mongoose.model('Museum', museumSchema);
+
+// Get museums
+app.get('/api/museums', async (req, res) => {
+    try {
+        const museums = await Museum.find()
+        res.status(200).json(museums)
+    }catch(err){
+        res.status(400).json(err)
+    }
 })
 
-app.post('/api/v1/museums', (req, res) => {
-    const { name, city } = req.body || {}
-    if (!name || !city) {
+// Create museum
+app.post('/api/museums', async (req, res) => {
+    try{
+        const museum = await Museum.create(req.body);
+        res.status(201).json(museum);
+    }catch(err){
+        res.status(400).json(err);
+    }
+})
+
+//Delete Museum
+
+app.delete('/api/museums/:id', async (req, res) => {
+    try {
+        const museum = await Museum.findByIdAndDelete(req.params.id);
+        if (!museum) {
+            res.status(404).json({
+                message: 'Museum not found'
+            })
+
+        }
+        return res.status(200).json(museum);
+    }catch(err){
+        res.status(400).json(err);
+    }
+})
+//Patch
+
+app.patch('/api/museums/:id', async (req, res) => {
+    try {
+        const museum = await Museum.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {
+                new: true,
+                runValidators: true
+            }
+        )
+
+        if (!museum) {
+            return res.status(404).json({
+                message: 'Museum not found'
+            })
+        }
+
+        return res.status(200).json(museum)
+    } catch (err) {
         return res.status(400).json({
-            message: 'Name and city are required',
+            message: err.message
         })
     }
-    const newMuseum = {
-        id:museums.length + 1,
-        name,
-        city,
-    }
-    museums.push(newMuseum)
-    return  res.status(200).json(newMuseum)
-
-
-})
-app.patch('/api/v1/museums/:id', (req, res) => {
-    const  id = Number(req.params.id)
-    const { name, city } = req.body || {}
-    const museum = museums.find((museum) => museum.id === id)
-    if (!museum) {
-        return res.status(404).json({})
-    }
-    if(name){
-        museum.name = name
-    }
-    if(city){
-        museum.city = city
-    }
-    res.json(museum)
-})
-
-app.delete('/api/v1/museums/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const museum = museums.find((museum) => museum.id === id)
-    if (!museum) {
-        return res.status(404).json({})
-    }
-    res.status(200).json(museum)
 })
 
 app.listen(3000, () => {
-    console.log('Backend is on port 3000')
+console.log('Server started on port 3000');
 })

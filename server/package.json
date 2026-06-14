@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js"
-
   },
   "keywords": [],
   "author": "",
@@ -16,7 +15,8 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongoose": "^9.6.2"
+    "mongoose": "^9.6.2",
+    "mongose": "^0.0.2-security"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
