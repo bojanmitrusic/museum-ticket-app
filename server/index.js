@@ -26,6 +26,16 @@ const museumSchema= new mongoose.Schema(
             type:String,
             required:true,
             trim:true
+        },
+        description:{
+            type:String,
+            required:true,
+            trim:true
+        },
+        location:{
+            type:String,
+            required:true,
+            trim:true
         }
     }
 )
@@ -44,8 +54,14 @@ app.get('/api/museums', async (req, res) => {
 // Create museum
 app.post('/api/museums', async (req, res) => {
     try{
-        const museum = await Museum.create(req.body);
-        res.status(201).json(museum);
+        const {name, city, description, location} = req.body;
+        const museum = await Museum.create({
+            name,
+            city,
+            description,
+            location,
+        })
+        res.status(200).json(museum)
     }catch(err){
         res.status(400).json(err);
     }
@@ -57,7 +73,7 @@ app.delete('/api/museums/:id', async (req, res) => {
     try {
         const museum = await Museum.findByIdAndDelete(req.params.id);
         if (!museum) {
-            res.status(404).json({
+          return   res.status(404).json({
                 message: 'Museum not found'
             })
 
@@ -94,6 +110,6 @@ app.patch('/api/museums/:id', async (req, res) => {
     }
 })
 
-app.listen(3000, () => {
+app.listen(port, () => {
 console.log('Server started on port 3000');
 })
