@@ -54,13 +54,7 @@ app.get('/api/museums', async (req, res) => {
 // Create museum
 app.post('/api/museums', async (req, res) => {
     try{
-        const {name, city, description, location} = req.body;
-        const museum = await Museum.create({
-            name,
-            city,
-            description,
-            location,
-        })
+        const museum = await Museum.create(req.body);
         res.status(200).json(museum)
     }catch(err){
         res.status(400).json(err);
